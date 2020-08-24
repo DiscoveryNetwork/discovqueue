@@ -1,0 +1,18 @@
+main: nl.parrotlync.queue.Queue
+name: Queue
+version: 1.1
+description: AutoQueue plugin for the Discovery Network
+api-version: 1.12
+author: ParrotLync
+commands:
+  queue:
+    description: Main Queue command
+    usage: /queue
+    aliases: [q]
+permissions:
+  queue.use:
+    default: op
+    description: Permission to use queues
+  queue.manage:
+    default: op
+    description: Permission to manage / create queues

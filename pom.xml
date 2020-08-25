@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>nl.parrotlync</groupId>
-    <artifactId>Queue</artifactId>
-    <version>1.12.2-v1.1</version>
+    <artifactId>DiscovQueue</artifactId>
+    <version>1.12.2-v1.2.2</version>
     <build>
         <plugins>
             <plugin>

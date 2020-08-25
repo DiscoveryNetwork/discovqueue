@@ -1,9 +1,13 @@
 package nl.parrotlync.queue.listener;
 
-import nl.parrotlync.queue.Queue;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+import nl.parrotlync.queue.DiscovQueue;
 import nl.parrotlync.queue.event.PlayerQueueJoinEvent;
 import nl.parrotlync.queue.event.PlayerQueueLeaveEvent;
+import nl.parrotlync.queue.manager.PlayerManager;
 import nl.parrotlync.queue.model.RideQueue;
+import nl.parrotlync.queue.model.SignType;
 import nl.parrotlync.queue.util.ChatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Sign;
@@ -19,13 +23,25 @@ public class QueueListener implements Listener {
 
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
-        if (event.getLine(0).equalsIgnoreCase("[queue]")) {
+        String header = event.getLine(0);
+        if (header.equalsIgnoreCase("[queue]") || header.equalsIgnoreCase("[waittime]") || header.equalsIgnoreCase("[queueinfo]")) {
             if (event.getPlayer().hasPermission("queue.manage")) {
-                RideQueue queue = Queue.getInstance().getQueueManager().getQueue(event.getLine(1));
+                RideQueue queue = DiscovQueue.getInstance().getQueueManager().getQueue(event.getLine(1));
                 if (queue != null) {
-                    queue.setSign((Sign) event.getBlock().getState());
+                    Sign sign = (Sign) event.getBlock().getState();
+                    SignType type;
+                    if (header.equalsIgnoreCase("[queue]")) {
+                        setQueueText(event, queue);
+                        type = SignType.QUEUE;
+                    } else if (header.equalsIgnoreCase("[waittime]")) {
+                        setWaitText(event, queue);
+                        type = SignType.WAIT_TIME;
+                    } else {
+                        setInfoText(event, queue);
+                        type = SignType.QUEUE_INFO;
+                    }
+                    queue.addSign(sign, type);
                     ChatUtil.sendMessage(event.getPlayer(), "§aSign registered.", true);
-                    queue.updateSign();
                 } else {
                     ChatUtil.sendMessage(event.getPlayer(), "§cThat queue does not exist!", true);
                     event.setCancelled(true);
@@ -39,14 +55,16 @@ public class QueueListener implements Listener {
         if (event.getBlock().getState() instanceof Sign) {
             Sign sign = (Sign) event.getBlock().getState();
             Player player = event.getPlayer();
-            if (sign.getLine(0).equalsIgnoreCase("[§2Queue§0]")) {
-                RideQueue queue = Queue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", ""));
-                if (!player.hasPermission("queue.manage")) {
-                    event.setCancelled(true);
-                    ChatUtil.sendMessage(player, "§cYou don't have permission to do that!", true);
-                } else {
-                    queue.setSign(null);
-                    ChatUtil.sendMessage(player, "§cSign unregistered.", true);
+            if (sign.getLine(0).equals("[§2Queue§0]") || sign.getLine(0).equals("[§1WaitTime§0]") || sign.getLine(0).equals("[§5QueueInfo§0]")) {
+                if (DiscovQueue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", "")) != null) {
+                    RideQueue queue = DiscovQueue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", ""));
+                    if (!player.hasPermission("queue.manage")) {
+                        event.setCancelled(true);
+                        ChatUtil.sendMessage(player, "§cYou don't have permission to do that!", true);
+                    } else {
+                        queue.removeSign(sign);
+                        ChatUtil.sendMessage(player, "§cSign unregistered.", true);
+                    }
                 }
             }
         }
@@ -58,15 +76,14 @@ public class QueueListener implements Listener {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (event.getClickedBlock().getState() instanceof Sign) {
                 Sign sign = (Sign) event.getClickedBlock().getState();
-                if (sign.getLine(0).equalsIgnoreCase("[§2Queue§0]")) {
-                    RideQueue queue = Queue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", ""));
-                    if (!Queue.getInstance().getPlayerManager().hasPlayer(player)) {
-                        if (queue.isOpened() && !queue.isLocked()) {
+                if (sign.getLine(0).equals("[§2Queue§0]")) {
+                    if (DiscovQueue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", "")) != null) {
+                        RideQueue queue = DiscovQueue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", ""));
+                        if (!DiscovQueue.getInstance().getPlayerManager().hasPlayer(player)) {
                             Bukkit.getServer().getPluginManager().callEvent(new PlayerQueueJoinEvent(queue, player));
+                        } else {
+                            Bukkit.getServer().getPluginManager().callEvent(new PlayerQueueLeaveEvent(queue, player));
                         }
-                    } else {
-                        Bukkit.getServer().getPluginManager().callEvent(new PlayerQueueLeaveEvent(queue, player));
-                        ChatUtil.sendMessage(player, "§7You have left the queue for §3" + queue.getName() + " §7queue.", true);
                     }
                 }
             }
@@ -76,25 +93,99 @@ public class QueueListener implements Listener {
     @EventHandler
     public void onPlayerQueueJoin(PlayerQueueJoinEvent event) {
         Player player = event.getPlayer();
-        if (!Queue.getInstance().getPlayerManager().hasPlayer(player)) {
+        if (!DiscovQueue.getInstance().getPlayerManager().hasPlayer(player)) {
             RideQueue queue = event.getQueue();
-            Queue.getInstance().getPlayerManager().addPlayer(player, queue);
-            queue.addPlayer(player);
-            ChatUtil.sendMessage(player, "§7You have joined the queue for §3" + queue.getName() + " §7queue.", true);
-            queue.updateSign();
+            if (queue.isOpened()) {
+                if (!queue.isLocked()) {
+                    int seconds;
+                    if (queue.getPlayers().size() != 0) {
+                        int firstPlayerSeconds = DiscovQueue.getInstance().getPlayerManager().getSeconds(queue.getPlayers().get(0));
+                        seconds = (((queue.getPlayers().size()) / queue.getBatchSize()) * queue.getInterval()) + firstPlayerSeconds;
+                    } else {
+                        seconds = (queue.getInterval() > 15) ? 15 : queue.getInterval();
+                    }
+                    DiscovQueue.getInstance().getPlayerManager().addPlayer(player, queue, seconds);
+                    queue.addPlayer(player);
+                    ChatUtil.sendMessage(player, "§7You have joined the queue for §3" + queue.getName(), true);
+                    queue.updateSigns();
+                } else {
+                    String msg = "§cWe're sorry, but the queue for §3" + queue.getName() + " §cis currently locked.";
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(msg));
+                }
+            } else {
+                String msg = "§cWe're sorry, but the queue for §3" + queue.getName() + " §cis currently closed.";
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(msg));
+            }
         } else {
-            ChatUtil.sendMessage(player, "§cYou are already in a queue! Type §o/queue leave §cto leave.", true);
+            ChatUtil.sendMessage(player, "§cYou are already in a queue! Type §o/queue leave §cor click the sign again to leave.", true);
         }
     }
 
     @EventHandler
     public void onPlayerQueueLeave(PlayerQueueLeaveEvent event) {
         Player player = event.getPlayer();
-        if (Queue.getInstance().getPlayerManager().hasPlayer(player)) {
+        PlayerManager playerManager = DiscovQueue.getInstance().getPlayerManager();
+        if (playerManager.hasPlayer(player)) {
             RideQueue queue = event.getQueue();
-            Queue.getInstance().getPlayerManager().removePlayer(player);
+            if (queue.getPlayers() != null && queue.getPlayers().size() != 0) {
+                int index = queue.getPlayers().indexOf(player);
+                for (Player queuePlayer : queue.getPlayers().subList(index, queue.getPlayers().size())) {
+                    int oldSeconds = playerManager.getSeconds(queuePlayer);
+                    DiscovQueue.getInstance().getPlayerManager().setSeconds(queuePlayer, oldSeconds - queue.getInterval());
+                }
+            }
+            playerManager.removePlayer(player);
             queue.removePlayer(player);
-            queue.updateSign();
+            queue.updateSigns();
+            ChatUtil.sendMessage(player, "§7You have left the queue for §3" + queue.getName(), true);
+        }
+    }
+
+    private void setQueueText(SignChangeEvent event, RideQueue queue) {
+        event.setLine(0, "[§2Queue§0]");
+        event.setLine(1, "§l" + queue.getName());
+        if (queue.isOpened()) {
+            event.setLine(2, "§o" + queue.getPlayers().size() + " waiting...");
+            if (queue.isLocked()) {
+                event.setLine(3, "§c§oLocked");
+            } else {
+                event.setLine(3, "§1§oClick to join!");
+            }
+        } else {
+            event.setLine(2, "");
+            event.setLine(3, "§4Closed");
+        }
+    }
+
+    private void setWaitText(SignChangeEvent event, RideQueue queue) {
+        event.setLine(0, "[§1WaitTime§0]");
+        event.setLine(1, "§l" + queue.getName());
+        if (queue.isOpened()) {
+            event.setLine(2, "§o" + queue.getPlayers().size() + " waiting...");
+            if (queue.isLocked()) {
+                event.setLine(3, "§c§oLocked");
+            } else {
+                event.setLine(3, "00:15");
+            }
+        } else {
+            event.setLine(2, "");
+            event.setLine(3, "§4Closed");
+        }
+    }
+
+    private void setInfoText(SignChangeEvent event, RideQueue queue) {
+        event.setLine(0, "[§5QueueInfo§0]");
+        event.setLine(1, "§l" + queue.getName());
+        if (queue.isOpened()) {
+            event.setLine(2, "§o" + queue.getPlayers().size() + " waiting...");
+            if (queue.isPaused()) {
+                event.setLine(3, "§6&oPaused");
+            } else {
+                event.setLine(3, "00:15");
+            }
+        } else {
+            event.setLine(2, "");
+            event.setLine(3, "§4Closed");
         }
     }
 }

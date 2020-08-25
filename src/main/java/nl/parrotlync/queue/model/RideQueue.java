@@ -2,25 +2,24 @@ package nl.parrotlync.queue.model;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import nl.parrotlync.queue.event.PlayerQueueLeaveEvent;
-import org.bukkit.Bukkit;
+import nl.parrotlync.queue.DiscovQueue;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class RideQueue {
     private String name;
     private Location location;
-    private Sign sign;
     private Integer batchSize;
     private Integer interval;
-    private Integer secondsLeft;
     private Boolean opened;
     private Boolean locked;
     private Boolean paused;
+    private HashMap<Sign, SignType> signs = new HashMap<>();
     private List<Player> players = new ArrayList<>();
 
     public RideQueue(String name) {
@@ -38,14 +37,11 @@ public class RideQueue {
 
     public void removePlayer(Player player) {
         players.remove(player);
-        if (players.size() == 0) {
-            secondsLeft = interval;
-        }
     }
 
     public void getBatch() {
         if (opened && !paused && location != null && batchSize != null) {
-            String msg = "§7 >> §2Your wait is over! &7<<";
+            String msg = "§7 >> §aYour wait is over! §7<<";
             List<Player> batch = new ArrayList<>();
             if (players.size() < batchSize) {
                 batch.addAll(players.subList(0, players.size()));
@@ -54,11 +50,19 @@ public class RideQueue {
             }
 
             for (Player player : batch) {
-                Bukkit.getServer().getPluginManager().callEvent(new PlayerQueueLeaveEvent(this, player));
+                DiscovQueue.getInstance().getPlayerManager().removePlayer(player);
+                removePlayer(player);
                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(msg));
                 player.teleport(location);
             }
-            this.secondsLeft = interval;
+
+            for (Player player : players) {
+                if (players.indexOf(player) == 0) {
+                    DiscovQueue.getInstance().getPlayerManager().setSeconds(player, interval);
+                }
+                DiscovQueue.getInstance().getPlayerManager().updateSeconds(player);
+            }
+            updateSigns();
         }
     }
 
@@ -74,29 +78,83 @@ public class RideQueue {
         this.location = location;
     }
 
-    public Sign getSign() {
-        return sign;
+    public List<Sign> getSigns() {
+        return new ArrayList<>(signs.keySet());
     }
 
-    public void setSign(Sign sign) {
-        this.sign = sign;
+    public void addSign(Sign sign, SignType type) {
+        signs.put(sign, type);
     }
 
-    public void updateSign() {
-        sign.setLine(0, "[§2Queue§0]");
-        sign.setLine(1, "§l" + name);
-        if (opened) {
-            sign.setLine(2, "§o" + players.size() + " waiting...");
-            if (locked) {
-                sign.setLine(3, "§c§oLocked");
-            } else {
-                sign.setLine(3, "§1§oClick to join!");
+    public void removeSign(Sign sign) { signs.remove(sign); }
+
+    public SignType getSignType(Sign sign) {
+        return signs.get(sign);
+    }
+
+    public void updateSigns() {
+        for (Sign sign : signs.keySet()) {
+            if (signs.get(sign) == SignType.QUEUE) {
+                sign.setLine(0, "[§2Queue§0]");
+                sign.setLine(1, "§l" + name);
+                if (opened) {
+                    sign.setLine(2, "§o" + players.size() + " waiting...");
+                    if (locked) {
+                        sign.setLine(3, "§c§oLocked");
+                    } else {
+                        sign.setLine(3, "§1§oClick to join!");
+                    }
+                } else {
+                    sign.setLine(2, "");
+                    sign.setLine(3, "§4Closed");
+                }
+            } else if (signs.get(sign) == SignType.WAIT_TIME) {
+                sign.setLine(0, "[§1WaitTime§0]");
+                sign.setLine(1, "§l" + name);
+                if (opened) {
+                    sign.setLine(2, "§o" + players.size() + " waiting...");
+                    if (locked) {
+                        sign.setLine(3, "§c§oLocked");
+                    } else {
+                        int secondsLeft;
+                        if (players.size() != 0) {
+                            secondsLeft = DiscovQueue.getInstance().getPlayerManager().getSeconds(players.get(players.size() - 1));
+                        } else {
+                            secondsLeft = (interval > 15) ? 15 : interval;
+                        }
+                        int minutes = secondsLeft / 60;
+                        int seconds = secondsLeft % 60;
+                        sign.setLine(3, String.format("%02d:%02d", minutes, seconds));
+                    }
+                } else {
+                    sign.setLine(2, "");
+                    sign.setLine(3, "§4Closed");
+                }
+            } else if (signs.get(sign) == SignType.QUEUE_INFO) {
+                sign.setLine(0, "[§5QueueInfo§0]");
+                sign.setLine(1, "§l" + name);
+                if (opened) {
+                    sign.setLine(2, "§o" + players.size() + " waiting...");
+                    if (paused) {
+                        sign.setLine(3, "§6&oPaused");
+                    } else {
+                        int secondsLeft;
+                        if (players.size() != 0) {
+                            secondsLeft = DiscovQueue.getInstance().getPlayerManager().getSeconds(players.get(0));
+                        } else {
+                            secondsLeft = 0;
+                        }
+                        int minutes = secondsLeft / 60;
+                        int seconds = secondsLeft % 60;
+                        sign.setLine(3, String.format("%02d:%02d", minutes, seconds));
+                    }
+                } else {
+                    sign.setLine(2, "");
+                    sign.setLine(3, "§4Closed");
+                }
             }
-        } else {
-            sign.setLine(2, "");
-            sign.setLine(3, "§4Closed");
+            sign.update();
         }
-        sign.update();
     }
 
     public void setBatchSize(Integer batchSize) {
@@ -114,15 +172,6 @@ public class RideQueue {
 
     public void setInterval(Integer interval) {
         this.interval = interval;
-        this.secondsLeft = interval;
-    }
-
-    public Integer getSecondsLeft() {
-        return secondsLeft;
-    }
-
-    public void setSecondsLeft(Integer secondsLeft) {
-        this.secondsLeft = secondsLeft;
     }
 
     public List<Player> getPlayers() { return players; }
@@ -135,19 +184,22 @@ public class RideQueue {
 
     public void toggleOpened() {
         opened = !opened;
-        updateSign();
+        updateSigns();
         if (!opened) {
+            for (Player player : players) {
+                DiscovQueue.getInstance().getPlayerManager().removePlayer(player);
+            }
             players.clear();
         }
     }
 
     public void toggleLocked() {
         locked = !locked;
-        updateSign();
+        updateSigns();
     }
 
     public void togglePaused() {
         paused = !paused;
-        updateSign();
+        updateSigns();
     }
 }

@@ -1,20 +1,26 @@
 package nl.parrotlync.queue.model;
 
+import org.bukkit.block.Sign;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class QueueStorable implements Serializable {
     private String name;
     private QueueLocation location;
-    private QueueSign sign;
+    private List<QueueSign> signs = new ArrayList<>();
     private Integer batchSize;
     private Integer interval;
 
     public QueueStorable(RideQueue queue) {
         this.name = queue.getName();
         this.location = new QueueLocation(queue.getLocation());
-        this.sign = new QueueSign(queue.getSign());
         this.batchSize = queue.getBatchSize();
         this.interval = queue.getInterval();
+        for (Sign sign : queue.getSigns()) {
+            signs.add(new QueueSign(sign, queue.getSignType(sign)));
+        }
     }
 
     public String getName() {
@@ -25,8 +31,8 @@ public class QueueStorable implements Serializable {
         return location;
     }
 
-    public QueueSign getSign() {
-        return sign;
+    public List<QueueSign> getSigns() {
+        return signs;
     }
 
     public Integer getBatchSize() {

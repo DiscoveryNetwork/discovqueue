@@ -1,12 +1,12 @@
-main: nl.parrotlync.queue.Queue
-name: Queue
-version: 1.1
-description: AutoQueue plugin for the Discovery Network
+main: nl.parrotlync.queue.DiscovQueue
+name: DiscovQueue
+version: 1.2.2
+description: Queue plugin for the Discovery Network
 api-version: 1.12
 author: ParrotLync
 commands:
   queue:
-    description: Main Queue command
+    description: Main DiscovQueue command
     usage: /queue
     aliases: [q]
 permissions:

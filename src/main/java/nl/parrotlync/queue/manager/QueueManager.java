@@ -16,7 +16,7 @@ import java.util.List;
 
 public class QueueManager {
     private HashMap<String, RideQueue> queues = new HashMap<>();
-    private String path = "plugins/Queue/queues.data";
+    private String path = "plugins/DiscovQueue/queues.data";
 
     public RideQueue getQueue(String name) {
         return queues.get(name.toLowerCase());
@@ -58,14 +58,19 @@ public class QueueManager {
                 World world = Bukkit.getWorld(location.getWorld());
                 queue.setLocation(new Location(world, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch()));
                 // Sign location
-                QueueSign sign = storedQueue.getSign();
-                World sWorld = Bukkit.getWorld(sign.getWorld());
-                queue.setSign((Sign) sWorld.getBlockAt(sign.getX(), sign.getY(), sign.getZ()).getState());
-                queue.updateSign();
+                for (QueueSign sign : storedQueue.getSigns()) {
+                    World sWorld = Bukkit.getWorld(sign.getWorld());
+                    if (sWorld.getBlockAt(sign.getX(), sign.getY(), sign.getZ()).getState() instanceof Sign) {
+                        queue.addSign((Sign) sWorld.getBlockAt(sign.getX(), sign.getY(), sign.getZ()).getState(), sign.getType());
+                    }
+                }
+                queue.updateSigns();
                 queues.put(storedQueue.getName().toLowerCase(), queue);
             }
+            Bukkit.getLogger().info("Loaded " + queues.size() + " queues from file.");
         } else {
             queues = new HashMap<>();
+            Bukkit.getLogger().info("Didn't find any existing queues.");
         }
     }
 
@@ -73,11 +78,12 @@ public class QueueManager {
         List<QueueStorable> queueStorableList = new ArrayList<>();
         for (String name : queues.keySet()) {
             RideQueue queue = queues.get(name);
-            if (queue.getSign() != null && queue.getLocation() != null) {
+            if (queue.getSigns().size() != 0 && queue.getLocation() != null) {
                 QueueStorable queueStorable = new QueueStorable(queues.get(name));
                 queueStorableList.add(queueStorable);
             }
         }
         DataUtil.saveObjectToPath(queueStorableList, path);
+        Bukkit.getLogger().info(queueStorableList.size() + " queues have been saved.");
     }
 }

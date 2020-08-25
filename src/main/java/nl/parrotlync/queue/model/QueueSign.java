@@ -10,13 +10,15 @@ public class QueueSign implements Serializable {
     private Integer xLocation;
     private Integer yLocation;
     private Integer zLocation;
+    private SignType type;
     private String world;
 
-    public QueueSign(Sign sign) {
+    public QueueSign(Sign sign, SignType type) {
         Location location = sign.getLocation();
         this.xLocation = (int) location.getX();
         this.yLocation = (int) location.getY();
         this.zLocation = (int) location.getZ();
+        this.type = type;
         this.world = Objects.requireNonNull(location.getWorld()).getName();
     }
 
@@ -35,4 +37,6 @@ public class QueueSign implements Serializable {
     public String getWorld() {
         return world;
     }
+
+    public SignType getType() { return type; }
 }

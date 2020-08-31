@@ -1,8 +1,8 @@
-package nl.parrotlync.queue.model;
+package nl.parrotlync.discovqueue.model;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import nl.parrotlync.queue.DiscovQueue;
+import nl.parrotlync.discovqueue.DiscovQueue;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;

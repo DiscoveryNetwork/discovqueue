@@ -1,3 +1,3 @@
-package nl.parrotlync.queue.model;
+package nl.parrotlync.discovqueue.model;
 
 public enum SignType { QUEUE, WAIT_TIME, QUEUE_INFO }

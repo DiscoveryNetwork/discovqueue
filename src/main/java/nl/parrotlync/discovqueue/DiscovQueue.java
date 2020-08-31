@@ -1,11 +1,11 @@
-package nl.parrotlync.queue;
+package nl.parrotlync.discovqueue;
 
-import nl.parrotlync.queue.command.QueueCommandExecutor;
-import nl.parrotlync.queue.listener.QueueListener;
-import nl.parrotlync.queue.manager.PlayerManager;
-import nl.parrotlync.queue.manager.QueueManager;
-import nl.parrotlync.queue.tick.PlayerTick;
-import nl.parrotlync.queue.tick.SignTick;
+import nl.parrotlync.discovqueue.command.QueueCommandExecutor;
+import nl.parrotlync.discovqueue.listener.QueueListener;
+import nl.parrotlync.discovqueue.manager.PlayerManager;
+import nl.parrotlync.discovqueue.manager.QueueManager;
+import nl.parrotlync.discovqueue.tick.PlayerTick;
+import nl.parrotlync.discovqueue.tick.SignTick;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class DiscovQueue extends JavaPlugin {
@@ -17,10 +17,6 @@ public class DiscovQueue extends JavaPlugin {
         queueManager = new QueueManager();
         playerManager = new PlayerManager();
         instance = this;
-    }
-
-    public static DiscovQueue getInstance() {
-        return instance;
     }
 
     @Override
@@ -38,6 +34,10 @@ public class DiscovQueue extends JavaPlugin {
         PlayerTick.stop();
         queueManager.save();
         getLogger().info("DiscovQueue is now disabled!");
+    }
+
+    public static DiscovQueue getInstance() {
+        return instance;
     }
 
     public PlayerManager getPlayerManager() {

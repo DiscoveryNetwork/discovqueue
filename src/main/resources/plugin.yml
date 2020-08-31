@@ -1,6 +1,6 @@
-main: nl.parrotlync.queue.DiscovQueue
+main: nl.parrotlync.discovqueue.DiscovQueue
 name: DiscovQueue
-version: 1.2.2
+version: 1.2.3
 description: Queue plugin for the Discovery Network
 api-version: 1.12
 author: ParrotLync

@@ -1,9 +1,9 @@
-package nl.parrotlync.queue.tick;
+package nl.parrotlync.discovqueue.tick;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import nl.parrotlync.queue.DiscovQueue;
-import nl.parrotlync.queue.model.RideQueue;
+import nl.parrotlync.discovqueue.DiscovQueue;
+import nl.parrotlync.discovqueue.model.RideQueue;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;

@@ -1,10 +1,11 @@
-package nl.parrotlync.queue.manager;
+package nl.parrotlync.discovqueue.manager;
 
-import nl.parrotlync.queue.model.QueueLocation;
-import nl.parrotlync.queue.model.QueueSign;
-import nl.parrotlync.queue.model.QueueStorable;
-import nl.parrotlync.queue.model.RideQueue;
-import nl.parrotlync.queue.util.DataUtil;
+import nl.parrotlync.discovqueue.DiscovQueue;
+import nl.parrotlync.discovqueue.model.QueueLocation;
+import nl.parrotlync.discovqueue.model.QueueSign;
+import nl.parrotlync.discovqueue.model.QueueStorable;
+import nl.parrotlync.discovqueue.model.RideQueue;
+import nl.parrotlync.discovqueue.util.DataUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -67,10 +68,10 @@ public class QueueManager {
                 queue.updateSigns();
                 queues.put(storedQueue.getName().toLowerCase(), queue);
             }
-            Bukkit.getLogger().info("Loaded " + queues.size() + " queues from file.");
+            DiscovQueue.getInstance().getLogger().info("Loaded " + queues.size() + " queues from file.");
         } else {
             queues = new HashMap<>();
-            Bukkit.getLogger().info("Didn't find any existing queues.");
+            DiscovQueue.getInstance().getLogger().info("Didn't find any existing queues.");
         }
     }
 
@@ -84,6 +85,6 @@ public class QueueManager {
             }
         }
         DataUtil.saveObjectToPath(queueStorableList, path);
-        Bukkit.getLogger().info(queueStorableList.size() + " queues have been saved.");
+        DiscovQueue.getInstance().getLogger().info(queueStorableList.size() + " queues have been saved.");
     }
 }

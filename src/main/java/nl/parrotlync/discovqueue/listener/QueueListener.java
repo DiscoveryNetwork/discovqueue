@@ -1,14 +1,14 @@
-package nl.parrotlync.queue.listener;
+package nl.parrotlync.discovqueue.listener;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import nl.parrotlync.queue.DiscovQueue;
-import nl.parrotlync.queue.event.PlayerQueueJoinEvent;
-import nl.parrotlync.queue.event.PlayerQueueLeaveEvent;
-import nl.parrotlync.queue.manager.PlayerManager;
-import nl.parrotlync.queue.model.RideQueue;
-import nl.parrotlync.queue.model.SignType;
-import nl.parrotlync.queue.util.ChatUtil;
+import nl.parrotlync.discovqueue.DiscovQueue;
+import nl.parrotlync.discovqueue.event.PlayerQueueJoinEvent;
+import nl.parrotlync.discovqueue.event.PlayerQueueLeaveEvent;
+import nl.parrotlync.discovqueue.manager.PlayerManager;
+import nl.parrotlync.discovqueue.model.RideQueue;
+import nl.parrotlync.discovqueue.model.SignType;
+import nl.parrotlync.discovqueue.util.ChatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;

@@ -1,4 +1,4 @@
-package nl.parrotlync.queue.util;
+package nl.parrotlync.discovqueue.util;
 
 import org.bukkit.command.CommandSender;
 

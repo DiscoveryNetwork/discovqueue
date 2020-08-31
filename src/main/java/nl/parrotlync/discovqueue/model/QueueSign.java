@@ -1,4 +1,4 @@
-package nl.parrotlync.queue.model;
+package nl.parrotlync.discovqueue.model;
 
 import org.bukkit.Location;
 import org.bukkit.block.Sign;

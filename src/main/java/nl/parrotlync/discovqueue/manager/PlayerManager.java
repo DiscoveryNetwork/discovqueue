@@ -1,7 +1,6 @@
-package nl.parrotlync.queue.manager;
+package nl.parrotlync.discovqueue.manager;
 
-import nl.parrotlync.queue.DiscovQueue;
-import nl.parrotlync.queue.model.RideQueue;
+import nl.parrotlync.discovqueue.model.RideQueue;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;

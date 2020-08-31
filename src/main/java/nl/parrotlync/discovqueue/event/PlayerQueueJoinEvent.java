@@ -1,6 +1,6 @@
-package nl.parrotlync.queue.event;
+package nl.parrotlync.discovqueue.event;
 
-import nl.parrotlync.queue.model.RideQueue;
+import nl.parrotlync.discovqueue.model.RideQueue;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;

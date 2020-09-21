@@ -1,7 +1,9 @@
 package nl.parrotlync.discovqueue;
 
+import com.bergerkiller.bukkit.tc.signactions.SignAction;
 import nl.parrotlync.discovqueue.command.QueueCommandExecutor;
 import nl.parrotlync.discovqueue.listener.QueueListener;
+import nl.parrotlync.discovqueue.listener.QueueSignAction;
 import nl.parrotlync.discovqueue.manager.PlayerManager;
 import nl.parrotlync.discovqueue.manager.QueueManager;
 import nl.parrotlync.discovqueue.tick.PlayerTick;
@@ -24,6 +26,7 @@ public class DiscovQueue extends JavaPlugin {
         this.getCommand("queue").setExecutor(new QueueCommandExecutor());
         getServer().getPluginManager().registerEvents(new QueueListener(), this);
         queueManager.load();
+        SignAction.register(new QueueSignAction());
         PlayerTick.start(0L, 20L);
         SignTick.start(0L, 20L);
         getLogger().info("DiscovQueue is now enabled!");

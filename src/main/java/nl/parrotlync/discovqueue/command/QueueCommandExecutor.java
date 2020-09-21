@@ -3,6 +3,8 @@ package nl.parrotlync.discovqueue.command;
 import nl.parrotlync.discovqueue.DiscovQueue;
 import nl.parrotlync.discovqueue.event.PlayerQueueJoinEvent;
 import nl.parrotlync.discovqueue.event.PlayerQueueLeaveEvent;
+import nl.parrotlync.discovqueue.model.GenericQueue;
+import nl.parrotlync.discovqueue.model.Queue;
 import nl.parrotlync.discovqueue.model.RideQueue;
 import nl.parrotlync.discovqueue.util.ChatUtil;
 import org.bukkit.Bukkit;
@@ -21,9 +23,9 @@ public class QueueCommandExecutor implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        if (sender.hasPermission("queue.use")) {
+        if (sender.hasPermission("discovqueue.use")) {
             if (args.length == 0) {
-                ChatUtil.sendMessage(sender, "§6DiscovQueue-1.12.2-v1.2.3 §7- Use /queue help", true);
+                ChatUtil.sendMessage(sender, "§6DiscovQueue-1.12.2-v2.0.1 §7(§aParrotLync§7) - Use /queue help", false);
                 return true;
             }
 
@@ -33,22 +35,22 @@ public class QueueCommandExecutor implements TabExecutor {
 
             if (args[0].equalsIgnoreCase("join") && args.length == 2) {
                 Player player = (Player) sender;
-                RideQueue queue = DiscovQueue.getInstance().getQueueManager().getQueue(args[1]);
+                Queue queue = DiscovQueue.getInstance().getQueueManager().getQueue(args[1]);
                 Bukkit.getServer().getPluginManager().callEvent(new PlayerQueueJoinEvent(queue, player));
                 return true;
             }
 
             if (args[0].equalsIgnoreCase("leave")) {
                 Player player = (Player) sender;
-                RideQueue queue = DiscovQueue.getInstance().getPlayerManager().getQueue(player);
+                Queue queue = DiscovQueue.getInstance().getPlayerManager().getQueue(player);
                 Bukkit.getServer().getPluginManager().callEvent(new PlayerQueueLeaveEvent(queue, player));
                 return true;
             }
         }
 
-        if (sender.hasPermission("queue.operate")) {
+        if (sender.hasPermission("discovqueue.operate")) {
             if (args[0].equalsIgnoreCase("toggle") && args.length == 3) {
-                RideQueue queue = DiscovQueue.getInstance().getQueueManager().getQueue(args[2]);
+                Queue queue = DiscovQueue.getInstance().getQueueManager().getQueue(args[2]);
                 String msg;
 
                 if (args[1].equalsIgnoreCase("status")) {
@@ -58,7 +60,7 @@ public class QueueCommandExecutor implements TabExecutor {
                     } else {
                         msg = "§4Closed";
                     }
-                    ChatUtil.sendMessage(sender, "§3" + queue.getName() + " §7is now " + msg, true);
+                    ChatUtil.broadcast("§3" + queue.getName() + " §7is now " + msg, true);
                     return true;
                 }
 
@@ -86,12 +88,13 @@ public class QueueCommandExecutor implements TabExecutor {
             }
         }
         
-        if (sender.hasPermission("queue.manage")) {
-            if (args[0].equalsIgnoreCase("create") && args.length == 2) {
-                Boolean result = DiscovQueue.getInstance().getQueueManager().createQueue(args[1]);
-                if (result) {
-                    ChatUtil.sendMessage(sender, "§7Queue created. Please use §o/q location " + args[1] + " §7to set the teleport location.", true);
-                    return true;
+        if (sender.hasPermission("discovqueue.manage")) {
+            if (args[0].equalsIgnoreCase("create") && args.length == 3) {
+                Queue queue = DiscovQueue.getInstance().getQueueManager().createQueue(args[2], args[1]);
+                if (queue instanceof RideQueue) {
+                    ChatUtil.sendMessage(sender, "§7Queue created. Please use §o/q interval " + args[2] + " <seconds> §7to set the interval.", true);
+                } else if (queue instanceof GenericQueue) {
+                    ChatUtil.sendMessage(sender, "§7Queue created. Please use §o/q location " + args[2] + " §7to set the teleport location.", true);
                 }
                 return false;
             }
@@ -137,9 +140,9 @@ public class QueueCommandExecutor implements TabExecutor {
             }
 
             if (args[0].equalsIgnoreCase("list")) {
-                List<RideQueue> queues = DiscovQueue.getInstance().getQueueManager().getQueues();
+                List<Queue> queues = DiscovQueue.getInstance().getQueueManager().getQueues();
                 StringBuilder msg = new StringBuilder("§7Queue list: §3");
-                for (RideQueue queue : queues) {
+                for (Queue queue : queues) {
                     if (queues.indexOf(queue) == 0) {
                         msg.append(queue.getName());
                     } else {
@@ -151,7 +154,7 @@ public class QueueCommandExecutor implements TabExecutor {
             }
 
             if (args[0].equalsIgnoreCase("batch") && args.length == 2) {
-                DiscovQueue.getInstance().getQueueManager().getQueue(args[1]).getBatch();
+                DiscovQueue.getInstance().getQueueManager().getQueue(args[1]).teleportBatch();
                 return true;
             }
         }
@@ -179,20 +182,23 @@ public class QueueCommandExecutor implements TabExecutor {
 
         if (args.length == 2) {
             if (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("remove") || args[0].equalsIgnoreCase("tp")) {
-                for (RideQueue queue : DiscovQueue.getInstance().getQueueManager().getQueues()) {
+                for (Queue queue : DiscovQueue.getInstance().getQueueManager().getQueues()) {
                     suggestions.add(queue.getName());
                 }
             } else if (args[0].equalsIgnoreCase("toggle")) {
                 suggestions.add("status");
                 suggestions.add("locked");
                 suggestions.add("paused");
+            } else if (args[0].equalsIgnoreCase("create")) {
+                suggestions.add("generic");
+                suggestions.add("ride");
             }
             return StringUtil.copyPartialMatches(args[1], suggestions, new ArrayList<String>());
         }
 
         if (args.length == 3) {
             if (args[1].equalsIgnoreCase("toggle")) {
-                for (RideQueue queue : DiscovQueue.getInstance().getQueueManager().getQueues()) {
+                for (Queue queue : DiscovQueue.getInstance().getQueueManager().getQueues()) {
                     suggestions.add(queue.getName());
                 }
             }
@@ -210,7 +216,7 @@ public class QueueCommandExecutor implements TabExecutor {
                 ChatUtil.sendMessage(sender, "§3/queue toggle <status/locked/paused> <name> §7Toggle a queue value", false);
             }
             if (sender.hasPermission("queue.manage")) {
-                ChatUtil.sendMessage(sender, "§3/queue create <name> §7Create a queue", false);
+                ChatUtil.sendMessage(sender, "§3/queue create <generic/ride> <name> §7Create a queue", false);
                 ChatUtil.sendMessage(sender, "§3/queue remove <name> §7Remove a queue", false);
                 ChatUtil.sendMessage(sender, "§3/queue tp <name> §7Teleport to a queue location", false);
                 ChatUtil.sendMessage(sender, "§3/queue list §7List all queues", false);

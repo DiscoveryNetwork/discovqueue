@@ -5,7 +5,7 @@
 
     <groupId>nl.parrotlync</groupId>
     <artifactId>DiscovQueue</artifactId>
-    <version>1.12.2-v1.2.3</version>
+    <version>1.12.2-v2.0.1</version>
     <build>
         <plugins>
             <plugin>
@@ -24,6 +24,10 @@
             <id>spigotmc-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>MG-Dev Jenkins CI Maven Repository</id>
+            <url>https://ci.mg-dev.eu/plugin/repository/everything/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -31,6 +35,18 @@
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.12.2-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.bergerkiller.bukkit</groupId>
+            <artifactId>TrainCarts</artifactId>
+            <version>1.16.1-v1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.bergerkiller.bukkit</groupId>
+            <artifactId>BKCommonLib</artifactId>
+            <version>1.16.1-v1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

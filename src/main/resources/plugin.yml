@@ -1,8 +1,9 @@
 main: nl.parrotlync.discovqueue.DiscovQueue
 name: DiscovQueue
-version: 1.2.3
+version: 2.0.1
 description: Queue plugin for the Discovery Network
 api-version: 1.12
+depend: [Train_Carts]
 author: ParrotLync
 commands:
   queue:
@@ -10,9 +11,9 @@ commands:
     usage: /queue
     aliases: [q]
 permissions:
-  queue.use:
+  discovqueue.use:
     default: op
     description: Permission to use queues
-  queue.manage:
+  discovqueue.manage:
     default: op
     description: Permission to manage / create queues

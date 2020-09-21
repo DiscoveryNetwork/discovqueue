@@ -1,19 +1,19 @@
 package nl.parrotlync.discovqueue.manager;
 
-import nl.parrotlync.discovqueue.model.RideQueue;
+import nl.parrotlync.discovqueue.model.Queue;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 
 public class PlayerManager {
-    private HashMap<Player, RideQueue> players = new HashMap<>();
+    private HashMap<Player, Queue> players = new HashMap<>();
     private HashMap<Player, Integer> seconds = new HashMap<>();
 
-    public RideQueue getQueue(Player player) {
+    public Queue getQueue(Player player) {
         return players.get(player);
     }
 
-    public void addPlayer(Player player, RideQueue queue, Integer seconds) {
+    public void addPlayer(Player player, Queue queue, Integer seconds) {
         players.put(player, queue);
         this.seconds.put(player, seconds);
     }
@@ -32,7 +32,7 @@ public class PlayerManager {
     }
 
     public void updateSeconds(Player player) {
-        RideQueue queue = players.get(player);
+        Queue queue = players.get(player);
         int firstPlayerSeconds = seconds.get(queue.getPlayers().get(0));
         int seconds = ((queue.getPlayers().indexOf(player) / queue.getBatchSize()) * queue.getInterval()) + firstPlayerSeconds;
         this.seconds.put(player, seconds);

@@ -1,10 +1,13 @@
 package nl.parrotlync.discovqueue.manager;
 
 import nl.parrotlync.discovqueue.DiscovQueue;
-import nl.parrotlync.discovqueue.model.QueueLocation;
-import nl.parrotlync.discovqueue.model.QueueSign;
-import nl.parrotlync.discovqueue.model.QueueStorable;
+import nl.parrotlync.discovqueue.model.GenericQueue;
+import nl.parrotlync.discovqueue.model.Queue;
 import nl.parrotlync.discovqueue.model.RideQueue;
+import nl.parrotlync.discovqueue.model.storable.QueueLocationStorable;
+import nl.parrotlync.discovqueue.model.storable.QueueSignStorable;
+import nl.parrotlync.discovqueue.model.storable.QueueStorable;
+import nl.parrotlync.discovqueue.model.storable.QueueType;
 import nl.parrotlync.discovqueue.util.DataUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -16,50 +19,60 @@ import java.util.HashMap;
 import java.util.List;
 
 public class QueueManager {
-    private HashMap<String, RideQueue> queues = new HashMap<>();
+    private HashMap<String, Queue> queues = new HashMap<>();
     private String path = "plugins/DiscovQueue/queues.data";
 
-    public RideQueue getQueue(String name) {
+    public Queue getQueue(String name) {
         return queues.get(name.toLowerCase());
     }
 
-    public Boolean createQueue(String name) {
+    public Queue createQueue(String name, String type) {
         if (queues.get(name.toLowerCase()) == null) {
-            queues.put(name.toLowerCase(), new RideQueue(name));
-            return true;
+            if (type.equalsIgnoreCase("generic")) {
+                Queue queue = new GenericQueue(name);
+                queues.put(name.toLowerCase(), queue);
+                return queue;
+            } else if (type.equalsIgnoreCase("ride")) {
+                Queue queue = new RideQueue(name);
+                queues.put(name.toLowerCase(), queue);
+                return queue;
+            }
         }
-        return false;
+        return null;
     }
 
     public Boolean removeQueue(String name) {
         if (queues.get(name.toLowerCase()) != null) {
-            queues.remove(name);
+            queues.remove(name.toLowerCase());
             return true;
         }
         return false;
     }
 
-    public List<RideQueue> getQueues() {
-        List<RideQueue> queueList = new ArrayList<>();
-        for (String name : queues.keySet()) {
-            queueList.add(queues.get(name));
-        }
-        return queueList;
+    public List<Queue> getQueues() {
+        return new ArrayList<>(queues.values());
     }
 
     public void load() {
         List<QueueStorable> storedQueues = DataUtil.loadObjectFromPath(path);
         if (storedQueues != null) {
             for (QueueStorable storedQueue : storedQueues) {
-                RideQueue queue = new RideQueue(storedQueue.getName());
+                Queue queue;
+                if (storedQueue.getType() == QueueType.GENERIC) {
+                    queue = new GenericQueue(storedQueue.getName());
+                } else if (storedQueue.getType() == QueueType.RIDE) {
+                    queue = new RideQueue(storedQueue.getName());
+                } else {
+                    continue;
+                }
                 queue.setBatchSize(storedQueue.getBatchSize());
                 queue.setInterval(storedQueue.getInterval());
                 // Teleport location
-                QueueLocation location = storedQueue.getLocation();
+                QueueLocationStorable location = storedQueue.getLocation();
                 World world = Bukkit.getWorld(location.getWorld());
                 queue.setLocation(new Location(world, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch()));
                 // Sign location
-                for (QueueSign sign : storedQueue.getSigns()) {
+                for (QueueSignStorable sign : storedQueue.getSigns()) {
                     World sWorld = Bukkit.getWorld(sign.getWorld());
                     if (sWorld.getBlockAt(sign.getX(), sign.getY(), sign.getZ()).getState() instanceof Sign) {
                         queue.addSign((Sign) sWorld.getBlockAt(sign.getX(), sign.getY(), sign.getZ()).getState(), sign.getType());
@@ -78,7 +91,7 @@ public class QueueManager {
     public void save() {
         List<QueueStorable> queueStorableList = new ArrayList<>();
         for (String name : queues.keySet()) {
-            RideQueue queue = queues.get(name);
+            Queue queue = queues.get(name);
             if (queue.getSigns().size() != 0 && queue.getLocation() != null) {
                 QueueStorable queueStorable = new QueueStorable(queues.get(name));
                 queueStorableList.add(queueStorable);

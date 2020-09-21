@@ -1,11 +1,11 @@
-package nl.parrotlync.discovqueue.model;
+package nl.parrotlync.discovqueue.model.storable;
 
 import org.bukkit.Location;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-public class QueueLocation implements Serializable {
+public class QueueLocationStorable implements Serializable {
     private double xLocation;
     private double yLocation;
     private double zLocation;
@@ -13,7 +13,7 @@ public class QueueLocation implements Serializable {
     private float pitch;
     private String world;
 
-    public QueueLocation(Location location) {
+    public QueueLocationStorable(Location location) {
         this.xLocation = location.getX();
         this.yLocation = location.getY();
         this.zLocation = location.getZ();

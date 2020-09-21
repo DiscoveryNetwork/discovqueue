@@ -1,19 +1,20 @@
-package nl.parrotlync.discovqueue.model;
+package nl.parrotlync.discovqueue.model.storable;
 
+import nl.parrotlync.discovqueue.model.SignType;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-public class QueueSign implements Serializable {
+public class QueueSignStorable implements Serializable {
     private Integer xLocation;
     private Integer yLocation;
     private Integer zLocation;
     private SignType type;
     private String world;
 
-    public QueueSign(Sign sign, SignType type) {
+    public QueueSignStorable(Sign sign, SignType type) {
         Location location = sign.getLocation();
         this.xLocation = (int) location.getX();
         this.yLocation = (int) location.getY();

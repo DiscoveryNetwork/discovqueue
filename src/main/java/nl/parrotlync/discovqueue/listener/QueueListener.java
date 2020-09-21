@@ -6,7 +6,7 @@ import nl.parrotlync.discovqueue.DiscovQueue;
 import nl.parrotlync.discovqueue.event.PlayerQueueJoinEvent;
 import nl.parrotlync.discovqueue.event.PlayerQueueLeaveEvent;
 import nl.parrotlync.discovqueue.manager.PlayerManager;
-import nl.parrotlync.discovqueue.model.RideQueue;
+import nl.parrotlync.discovqueue.model.Queue;
 import nl.parrotlync.discovqueue.model.SignType;
 import nl.parrotlync.discovqueue.util.ChatUtil;
 import org.bukkit.Bukkit;
@@ -25,8 +25,8 @@ public class QueueListener implements Listener {
     public void onSignChange(SignChangeEvent event) {
         String header = event.getLine(0);
         if (header.equalsIgnoreCase("[queue]") || header.equalsIgnoreCase("[waittime]") || header.equalsIgnoreCase("[queueinfo]")) {
-            if (event.getPlayer().hasPermission("queue.manage")) {
-                RideQueue queue = DiscovQueue.getInstance().getQueueManager().getQueue(event.getLine(1));
+            if (event.getPlayer().hasPermission("discovqueue.manage")) {
+                Queue queue = DiscovQueue.getInstance().getQueueManager().getQueue(event.getLine(1));
                 if (queue != null) {
                     Sign sign = (Sign) event.getBlock().getState();
                     SignType type;
@@ -57,8 +57,8 @@ public class QueueListener implements Listener {
             Player player = event.getPlayer();
             if (sign.getLine(0).equals("[§2Queue§0]") || sign.getLine(0).equals("[§1WaitTime§0]") || sign.getLine(0).equals("[§5QueueInfo§0]")) {
                 if (DiscovQueue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", "")) != null) {
-                    RideQueue queue = DiscovQueue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", ""));
-                    if (!player.hasPermission("queue.manage")) {
+                    Queue queue = DiscovQueue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", ""));
+                    if (!player.hasPermission("discovqueue.manage")) {
                         event.setCancelled(true);
                         ChatUtil.sendMessage(player, "§cYou don't have permission to do that!", true);
                     } else {
@@ -78,7 +78,7 @@ public class QueueListener implements Listener {
                 Sign sign = (Sign) event.getClickedBlock().getState();
                 if (sign.getLine(0).equals("[§2Queue§0]")) {
                     if (DiscovQueue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", "")) != null) {
-                        RideQueue queue = DiscovQueue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", ""));
+                        Queue queue = DiscovQueue.getInstance().getQueueManager().getQueue(sign.getLine(1).replace("§l", ""));
                         if (!DiscovQueue.getInstance().getPlayerManager().hasPlayer(player)) {
                             Bukkit.getServer().getPluginManager().callEvent(new PlayerQueueJoinEvent(queue, player));
                         } else {
@@ -94,7 +94,7 @@ public class QueueListener implements Listener {
     public void onPlayerQueueJoin(PlayerQueueJoinEvent event) {
         Player player = event.getPlayer();
         if (!DiscovQueue.getInstance().getPlayerManager().hasPlayer(player)) {
-            RideQueue queue = event.getQueue();
+            Queue queue = event.getQueue();
             if (queue.isOpened()) {
                 if (!queue.isLocked()) {
                     int seconds;
@@ -126,7 +126,7 @@ public class QueueListener implements Listener {
         Player player = event.getPlayer();
         PlayerManager playerManager = DiscovQueue.getInstance().getPlayerManager();
         if (playerManager.hasPlayer(player)) {
-            RideQueue queue = event.getQueue();
+            Queue queue = event.getQueue();
             if (queue.getPlayers() != null && queue.getPlayers().size() != 0) {
                 int index = queue.getPlayers().indexOf(player);
                 for (Player queuePlayer : queue.getPlayers().subList(index, queue.getPlayers().size())) {
@@ -141,7 +141,7 @@ public class QueueListener implements Listener {
         }
     }
 
-    private void setQueueText(SignChangeEvent event, RideQueue queue) {
+    private void setQueueText(SignChangeEvent event, Queue queue) {
         event.setLine(0, "[§2Queue§0]");
         event.setLine(1, "§l" + queue.getName());
         if (queue.isOpened()) {
@@ -157,7 +157,7 @@ public class QueueListener implements Listener {
         }
     }
 
-    private void setWaitText(SignChangeEvent event, RideQueue queue) {
+    private void setWaitText(SignChangeEvent event, Queue queue) {
         event.setLine(0, "[§1WaitTime§0]");
         event.setLine(1, "§l" + queue.getName());
         if (queue.isOpened()) {
@@ -173,7 +173,7 @@ public class QueueListener implements Listener {
         }
     }
 
-    private void setInfoText(SignChangeEvent event, RideQueue queue) {
+    private void setInfoText(SignChangeEvent event, Queue queue) {
         event.setLine(0, "[§5QueueInfo§0]");
         event.setLine(1, "§l" + queue.getName());
         if (queue.isOpened()) {

@@ -1,21 +1,21 @@
 package nl.parrotlync.discovqueue.event;
 
-import nl.parrotlync.discovqueue.model.RideQueue;
+import nl.parrotlync.discovqueue.model.Queue;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 public class PlayerQueueJoinEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
-    private RideQueue queue;
+    private Queue queue;
     private Player player;
 
-    public PlayerQueueJoinEvent(RideQueue queue, Player player) {
+    public PlayerQueueJoinEvent(Queue queue, Player player) {
         this.queue = queue;
         this.player = player;
     }
 
-    public RideQueue getQueue() { return queue; }
+    public Queue getQueue() { return queue; }
 
     public Player getPlayer() { return player; }
 

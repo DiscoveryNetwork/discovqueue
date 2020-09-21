@@ -1,7 +1,7 @@
 package nl.parrotlync.discovqueue.tick;
 
 import nl.parrotlync.discovqueue.DiscovQueue;
-import nl.parrotlync.discovqueue.model.RideQueue;
+import nl.parrotlync.discovqueue.model.Queue;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -15,8 +15,8 @@ public class SignTick {
 
             @Override
             public void run() {
-                List<RideQueue> queues = DiscovQueue.getInstance().getQueueManager().getQueues();
-                for (RideQueue queue : queues) {
+                List<Queue> queues = DiscovQueue.getInstance().getQueueManager().getQueues();
+                for (Queue queue : queues) {
                     if (queue.isOpened()) {
                         queue.updateSigns();
                     }

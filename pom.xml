@@ -5,7 +5,11 @@
 
     <groupId>nl.parrotlync</groupId>
     <artifactId>DiscovQueue</artifactId>
-    <version>1.12.2-v2.0.1</version>
+    <version>1.12.2-v2.1${revision}</version>
+
+    <properties>
+        <revision>-SNAPSHOT</revision>
+    </properties>
     <build>
         <plugins>
             <plugin>
@@ -19,14 +23,17 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <url>https://maven.ipictserver.nl/repository/maven-releases/</url>
+        </repository>
+    </distributionManagement>
+
     <repositories>
         <repository>
-            <id>spigotmc-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-        </repository>
-        <repository>
-            <id>MG-Dev Jenkins CI Maven Repository</id>
-            <url>https://ci.mg-dev.eu/plugin/repository/everything/</url>
+            <id>nexus-releases</id>
+            <url>https://maven.ipictserver.nl/repository/maven-group/</url>
         </repository>
     </repositories>
 

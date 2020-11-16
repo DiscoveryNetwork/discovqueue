@@ -74,8 +74,10 @@ public class QueueManager {
                 // Sign location
                 for (QueueSignStorable sign : storedQueue.getSigns()) {
                     World sWorld = Bukkit.getWorld(sign.getWorld());
-                    if (sWorld.getBlockAt(sign.getX(), sign.getY(), sign.getZ()).getState() instanceof Sign) {
-                        queue.addSign((Sign) sWorld.getBlockAt(sign.getX(), sign.getY(), sign.getZ()).getState(), sign.getType());
+                    if (sWorld != null && sWorld.getBlockAt(sign.getX(), sign.getY(), sign.getZ()) != null) {
+                        if (sWorld.getBlockAt(sign.getX(), sign.getY(), sign.getZ()).getState() instanceof Sign) {
+                            queue.addSign((Sign) sWorld.getBlockAt(sign.getX(), sign.getY(), sign.getZ()).getState(), sign.getType());
+                        }
                     }
                 }
                 queue.updateSigns();

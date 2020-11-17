@@ -60,7 +60,7 @@ public class QueueCommandExecutor implements TabExecutor {
                     } else {
                         msg = "§4Closed";
                     }
-                    ChatUtil.broadcast("§3" + queue.getName() + " §7is now " + msg, true);
+                    ChatUtil.broadcast("§3" + queue.getName() + " §7is now " + msg, "discovqueue.operate", true);
                     return true;
                 }
 
@@ -201,6 +201,7 @@ public class QueueCommandExecutor implements TabExecutor {
                 for (Queue queue : DiscovQueue.getInstance().getQueueManager().getQueues()) {
                     suggestions.add(queue.getName());
                 }
+                return StringUtil.copyPartialMatches(args[1], suggestions, new ArrayList<String>());
             }
         }
 

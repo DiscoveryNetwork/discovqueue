@@ -21,4 +21,15 @@ public class ChatUtil {
             player.sendMessage(msg);
         }
     }
+
+    public static void broadcast(String msg, String permission, boolean withPrefix) {
+        if (withPrefix) {
+            msg = "§8[§aQueue§8] " + msg;
+        }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.hasPermission(permission)) {
+                player.sendMessage(msg);
+            }
+        }
+    }
 }

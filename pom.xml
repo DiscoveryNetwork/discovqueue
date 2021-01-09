@@ -5,7 +5,7 @@
 
     <groupId>nl.parrotlync</groupId>
     <artifactId>DiscovQueue</artifactId>
-    <version>1.12.2-v2.1${revision}</version>
+    <version>1.12.2-v3.0${revision}</version>
 
     <properties>
         <revision>-SNAPSHOT</revision>
@@ -57,5 +57,4 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
 </project>

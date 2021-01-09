@@ -2,7 +2,6 @@ package nl.parrotlync.discovqueue.util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 public class ChatUtil {
 
@@ -17,19 +16,13 @@ public class ChatUtil {
         if (withPrefix) {
             msg = "§8[§aQueue§8] " + msg;
         }
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            player.sendMessage(msg);
-        }
+        Bukkit.broadcastMessage(msg);
     }
 
     public static void broadcast(String msg, String permission, boolean withPrefix) {
         if (withPrefix) {
             msg = "§8[§aQueue§8] " + msg;
         }
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.hasPermission(permission)) {
-                player.sendMessage(msg);
-            }
-        }
+        Bukkit.broadcast(msg, permission);
     }
 }

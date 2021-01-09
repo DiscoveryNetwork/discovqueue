@@ -6,38 +6,33 @@ import net.md_5.bungee.api.chat.TextComponent;
 import nl.parrotlync.discovqueue.DiscovQueue;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class RideQueue extends Queue {
 
-    public RideQueue(String name) {
-        setName(name);
+    public RideQueue(String name, int size, int interval) {
+        this.name = name;
+        this.size = size;
+        this.interval = interval;
+        this.count = interval;
     }
 
-    @Override
-    public void teleportBatch(Collection<MinecartMember<?>> minecartMembers) {
-        setBatchSize(minecartMembers.size());
-        if (isOpened() && !isPaused()) {
-            List<Player> teleportedPlayers = new ArrayList<>();
-            for (Player player : getPlayers()) {
+    public void enterBatch(Collection<MinecartMember<?>> minecartMembers) {
+        if (opened && !paused) {
+            List<Player> batch = getPlayers();
+            for (Player player : batch) {
                 for (MinecartMember<?> minecartMember : minecartMembers) {
                     if (minecartMember.getAvailableSeatCount(player) > 0 && minecartMember.addPassengerForced(player)) {
                         DiscovQueue.getInstance().getPlayerManager().removePlayer(player);
-                        teleportedPlayers.add(player);
                         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§7 >> §aYour wait is over! §7<<"));
-                        break;
+                        players.remove(player);
                     }
                 }
             }
-
-            for (Player player : teleportedPlayers) {
-                removePlayer(player);
-            }
-
-            updatePlayerSeconds();
             updateSigns();
+            count = interval;
+            if (players.size() == 0) { stopTimer(); }
         }
     }
 }

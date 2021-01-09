@@ -7,17 +7,17 @@ import org.bukkit.event.HandlerList;
 
 public class PlayerQueueJoinEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
-    private Queue queue;
-    private Player player;
+    private final Player player;
+    private final Queue queue;
 
-    public PlayerQueueJoinEvent(Queue queue, Player player) {
-        this.queue = queue;
+    public PlayerQueueJoinEvent(Player player, Queue queue) {
         this.player = player;
+        this.queue = queue;
     }
 
-    public Queue getQueue() { return queue; }
-
     public Player getPlayer() { return player; }
+
+    public Queue getQueue() { return queue; }
 
     public HandlerList getHandlers() { return handlers; }
 

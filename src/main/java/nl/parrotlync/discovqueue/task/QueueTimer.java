@@ -39,10 +39,10 @@ public class QueueTimer implements Runnable {
                 }
                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(msg));
             }
+
             if (count > 0) {
                 queue.setCount(count - 1);
-            } else if (count == 0) {
-                queue.activateReceivers();
+                if (count == 1) { queue.activateReceivers(); }
             }
         }
     }

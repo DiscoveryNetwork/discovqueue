@@ -1,8 +1,8 @@
 main: nl.parrotlync.discovqueue.DiscovQueue
-name: DiscovQueue
-version: 3.0
-description: Queue plugin for the Discovery Network
-api-version: 1.12
+name: ${artifactId}
+version: ${version}
+description: ${description}
+api-version: 1.15
 depend: [Train_Carts]
 author: ParrotLync
 commands:

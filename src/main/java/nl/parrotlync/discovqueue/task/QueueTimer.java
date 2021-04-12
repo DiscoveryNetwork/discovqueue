@@ -14,9 +14,9 @@ public class QueueTimer implements Runnable {
 
     @Override
     public void run() {
-        int count = queue.getCount();
-        queue.updateSigns();
         if (queue.isOpened() && queue.getPlayers().size() != 0) {
+            int count = queue.getCount();
+            queue.updateSigns();
             for (Player player : queue.getPlayers()) {
                 int index = queue.getPlayers().indexOf(player);
                 String msg;

@@ -6,6 +6,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import nl.parrotlync.discovqueue.DiscovQueue;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -16,23 +17,28 @@ public class RideQueue extends Queue {
         this.size = size;
         this.interval = interval;
         this.count = interval;
+        runTimer();
     }
 
     public void enterBatch(Collection<MinecartMember<?>> minecartMembers) {
-        if (opened && !paused) {
-            List<Player> batch = getPlayers();
-            for (Player player : batch) {
+        List<Player> teleportedPlayers = new ArrayList<>();
+        if (opened && !paused && players.size() != 0) {
+            for (Player player : players) {
                 for (MinecartMember<?> minecartMember : minecartMembers) {
                     if (minecartMember.getAvailableSeatCount(player) > 0 && minecartMember.addPassengerForced(player)) {
                         DiscovQueue.getInstance().getPlayerManager().removePlayer(player);
                         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§7 >> §aYour wait is over! §7<<"));
-                        players.remove(player);
+                        teleportedPlayers.add(player);
                     }
                 }
             }
+
+            for (Player player : teleportedPlayers) {
+                players.remove(player);
+            }
+
             updateSigns();
-            count = interval;
-            if (players.size() == 0) { stopTimer(); }
+            resetCount();
         }
     }
 }

@@ -55,6 +55,7 @@ public class QueueStorable implements Serializable {
         HashMap<Sign, SignType> signs = new HashMap<>();
         for (LocationStorable loc : this.signs.keySet()) {
             World world = loc.getLocation().getWorld();
+            assert world != null;
             if (world.getBlockAt(loc.getLocation()).getState() instanceof Sign) {
                 signs.put((Sign) world.getBlockAt(loc.getLocation()).getState(), this.signs.get(loc));
             }

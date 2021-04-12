@@ -1,6 +1,5 @@
 package nl.parrotlync.discovqueue.model;
 
-import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import nl.parrotlync.discovqueue.DiscovQueue;
@@ -12,13 +11,16 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.RedstoneWallTorch;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
-import org.bukkit.material.RedstoneTorch;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class Queue {
     protected String name;
@@ -41,10 +43,6 @@ public abstract class Queue {
         return size;
     }
 
-    public void setSize(int size) {
-        this.size = size;
-    }
-
     public int getInterval() {
         return interval;
     }
@@ -62,6 +60,10 @@ public abstract class Queue {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    protected void resetCount() {
+        count = interval;
     }
 
     public boolean isOpened() {
@@ -102,7 +104,7 @@ public abstract class Queue {
     }
 
     public void addPlayer(Player player) {
-        if (players.size() == 0) { runTimer(); }
+        if (players.size() == 0) { resetCount(); }
         players.add(player);
         updateSigns();
     }
@@ -110,7 +112,6 @@ public abstract class Queue {
     public void removePlayer(Player player) {
         players.remove(player);
         updateSigns();
-        if (players.size() == 0) { stopTimer(); }
     }
 
     public List<Player> getPlayers() {
@@ -153,41 +154,42 @@ public abstract class Queue {
                 players.remove(player);
             }
             updateSigns();
-            count = interval;
-            if (players.size() == 0) { stopTimer(); }
+            resetCount();
         }
     }
     
     public void activateReceivers() {
-        Bukkit.getScheduler().runTask(DiscovQueue.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                for (Sign sign : signs.keySet()) {
-                    if (signs.get(sign) == SignType.RECEIVER) {
-                        final BlockState state = sign.getBlock().getState();
-                        final Location location = sign.getBlock().getLocation();
-                        org.bukkit.material.Sign signMaterial = (org.bukkit.material.Sign) sign.getBlock().getState().getData();
-                        BlockFace face = signMaterial.getFacing();
-
-                        Block block = sign.getBlock();
-                        block.setType(Material.REDSTONE_TORCH_ON);
-                        RedstoneTorch torch = (RedstoneTorch) block.getState().getData();
-                        torch.setFacingDirection(face);
-                        block.getState().setData(torch);
+        Bukkit.getScheduler().runTask(DiscovQueue.getInstance(), () -> {
+            for (Sign sign : signs.keySet()) {
+                if (signs.get(sign) == SignType.RECEIVER) {
+                    Block block = sign.getBlock();
+                    final BlockState initialState = block.getState();
+                    if (sign.getBlockData() instanceof WallSign) {
+                        WallSign wallSign = (WallSign) sign.getBlockData();
+                        BlockFace facing = wallSign.getFacing();
+                        block.setType(Material.REDSTONE_WALL_TORCH);
+                        RedstoneWallTorch torch = (RedstoneWallTorch) block.getBlockData();
+                        torch.setFacing(facing);
+                        block.setBlockData(torch);
                         block.getState().update();
-
-                        Bukkit.getScheduler().runTaskLater(DiscovQueue.getInstance(), new Runnable() {
-                            @Override
-                            public void run() {
-                                Block signBlock = Bukkit.getWorld(location.getWorld().getUID()).getBlockAt(location);
-                                signBlock.setType(state.getType());
-                                signBlock.getState().setType(state.getType());
-                                signBlock.getState().setData(state.getData());
-                                Sign sign = (Sign) signBlock.getState();
-                                sign.setLine(0, "[qreceiver]");
-                                sign.setLine(1, name);
-                                sign.update();
-                            }
+                        Bukkit.getScheduler().runTaskLater(DiscovQueue.getInstance(), () -> {
+                            block.setType(Material.OAK_WALL_SIGN);
+                            block.getState().update();
+                            Sign newSign = (Sign) block.getState();
+                            newSign.setLine(0, "[qreceiver]");
+                            newSign.setLine(1, name);
+                            newSign.update();
+                        }, 20);
+                    } else if (sign.getBlockData() instanceof org.bukkit.block.data.type.Sign) {
+                        block.setType(Material.REDSTONE_TORCH);
+                        block.getState().update();
+                        Bukkit.getScheduler().runTaskLater(DiscovQueue.getInstance(), () -> {
+                            block.setType(Material.OAK_SIGN);
+                            block.getState().update();
+                            Sign newSign = (Sign) block.getState();
+                            newSign.setLine(0, "[qreceiver]");
+                            newSign.setLine(1, name);
+                            newSign.update();
                         }, 20);
                     }
                 }
@@ -213,7 +215,7 @@ public abstract class Queue {
         });
     }
 
-    private void runTimer() {
+    protected void runTimer() {
         this.task = Bukkit.getScheduler().runTaskTimerAsynchronously(DiscovQueue.getInstance(), new QueueTimer(this), 0L, 20L);
     }
 

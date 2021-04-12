@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class LocationStorable implements Serializable {
     private final double x;
@@ -20,7 +21,7 @@ public class LocationStorable implements Serializable {
         this.z = location.getZ();
         this.yaw = location.getYaw();
         this.pitch = location.getPitch();
-        this.world = location.getWorld().getName();
+        this.world = Objects.requireNonNull(location.getWorld()).getName();
     }
 
     public Location getLocation() {

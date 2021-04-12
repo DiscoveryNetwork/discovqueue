@@ -9,9 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.RedstoneWallTorch;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
@@ -20,7 +18,6 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 public abstract class Queue {
     protected String name;
@@ -163,7 +160,6 @@ public abstract class Queue {
             for (Sign sign : signs.keySet()) {
                 if (signs.get(sign) == SignType.RECEIVER) {
                     Block block = sign.getBlock();
-                    final BlockState initialState = block.getState();
                     if (sign.getBlockData() instanceof WallSign) {
                         WallSign wallSign = (WallSign) sign.getBlockData();
                         BlockFace facing = wallSign.getFacing();
@@ -202,14 +198,11 @@ public abstract class Queue {
     }
 
     public void updateSigns() {
-        Bukkit.getScheduler().runTask(DiscovQueue.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                for (Sign sign : signs.keySet()) {
-                    SignType signType = signs.get(sign);
-                    if (signType == SignType.QUEUE) {
-                        updateQueueSign(sign);
-                    }
+        Bukkit.getScheduler().runTask(DiscovQueue.getInstance(), () -> {
+            for (Sign sign : signs.keySet()) {
+                SignType signType = signs.get(sign);
+                if (signType == SignType.QUEUE) {
+                    updateQueueSign(sign);
                 }
             }
         });
